@@ -1,0 +1,827 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="DebugStatic|ARM">
+      <Configuration>DebugStatic</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="DebugStatic|Win32">
+      <Configuration>DebugStatic</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="DebugStatic|x64">
+      <Configuration>DebugStatic</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="ReleaseStatic|ARM">
+      <Configuration>ReleaseStatic</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="ReleaseStatic|Win32">
+      <Configuration>ReleaseStatic</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="ReleaseStatic|x64">
+      <Configuration>ReleaseStatic</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1704EA01-6B21-4362-9F1F-44D25CF2E0D7}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libiconv</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'!='ReleaseStatic' AND '$(Configuration)'!='DebugStatic'">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='ReleaseStatic' OR  '$(Configuration)'=='DebugStatic'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Win32'">
+    <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)'=='ARM'" Label="UserMacros">
+    <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='x64'">
+    <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+  </PropertyGroup>
+
+  <!-- When MSBuild runs outside Visual Studio, SolutionDir is equal to ProjectDir. -->
+
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
+    <OutDir>$(ProjectDir)..\$(Platform)\$(ProjectName)_$(Configuration)\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+  </PropertyGroup>
+
+  <!--
+    ============================================================================
+    2019/03/05 - DAG - This item group feeds the AfterBuild target overrride,
+                       which appears last, since the task it overrides must
+                       first be imported.
+
+    2019/03/13 - DAG - $(SolutionDir) has a terminal backslash.
+    ============================================================================
+  -->
+
+  <ItemGroup>
+    <TestSubjectDLL Include="$(ProjectDir)..\vcruntime140\$(Platform)\vcruntime140.dll" />
+  </ItemGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  	<BeforeBuild>
+
+  	</BeforeBuild>
+    <ClCompile>
+
+      <!-- All DEBUG builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;_DEBUG;_WINDOWS;_USRDLL;BUILDING_LIBICONV;BUILDING_LIBCHARSET;LIBICONV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+
+      <!-- All DEBUG builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;_DEBUG;_WINDOWS;_USRDLL;BUILDING_LIBICONV;BUILDING_LIBCHARSET;LIBICONV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules>
+      </CodeAnalysisRules>
+      <CodeAnalysisRuleAssemblies>
+      </CodeAnalysisRuleAssemblies>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugStatic|Win32'">
+    <ClCompile>
+
+      <!-- All DEBUG builds of static libraries share these two properties. -->
+
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;_DEBUG;_WINDOWS;_LIB;USING_STATIC_LIBICONV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugStatic|ARM'">
+    <ClCompile>
+
+      <!-- All DEBUG builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;_DEBUG;_WINDOWS;_LIB;USING_STATIC_LIBICONV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules>
+      </CodeAnalysisRules>
+      <CodeAnalysisRuleAssemblies>
+      </CodeAnalysisRuleAssemblies>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+
+      <!-- All DEBUG builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_WIN64;_DEBUG;_WINDOWS;_USRDLL;BUILDING_LIBICONV;BUILDING_LIBCHARSET;LIBICONV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugStatic|x64'">
+    <ClCompile>
+
+      <!-- All DEBUG builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_WIN64;_DEBUG;_WINDOWS;_LIB;USING_STATIC_LIBICONV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+
+      <!-- All Release builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;NDEBUG;_WINDOWS;_USRDLL;BUILDING_LIBICONV;BUILDING_LIBCHARSET;LIBICONV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+
+      <!-- All Release builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;NDEBUG;_WINDOWS;_USRDLL;BUILDING_LIBICONV;BUILDING_LIBCHARSET;LIBICONV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules>
+      </CodeAnalysisRules>
+      <CodeAnalysisRuleAssemblies>
+      </CodeAnalysisRuleAssemblies>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+
+      <!-- All Release builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_WIN64;NDEBUG;_WINDOWS;_USRDLL;BUILDING_LIBICONV;BUILDING_LIBCHARSET;LIBICONV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseStatic|Win32'">
+    <ClCompile>
+
+      <!-- All Release builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;NDEBUG;_WINDOWS;_LIB;USING_STATIC_LIBICONV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseStatic|ARM'">
+    <ClCompile>
+
+      <!-- All Release builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);WIN32;NDEBUG;_WINDOWS;_LIB;USING_STATIC_LIBICONV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules>
+      </CodeAnalysisRules>
+      <CodeAnalysisRuleAssemblies>
+      </CodeAnalysisRuleAssemblies>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseStatic|x64'">
+    <ClCompile>
+
+      <!-- All Release builds share these two properties. All code links to the DLL implementation of the CRT library, which is the safest choice. -->
+
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+
+      <!-- These two properties vary from project to project, and, to a lesser extent, between Debug and Release builds. -->
+
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_WIN64;NDEBUG;_WINDOWS;_LIB;USING_STATIC_LIBICONV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(IncludePath)</AdditionalIncludeDirectories>
+
+      <!-- All projects that target a Windows platform share these attributes. -->
+
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRules />
+      <CodeAnalysisRuleAssemblies />
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_ENV_IS_VISUAL_STUDIO;PLATFORM_IS_$(Platform);PROJ_IS_$(ProjectName);_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ShowProgress>true</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </ResourceCompile>
+
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateManifest>true</GenerateManifest>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkIncremental>false</LinkIncremental>
+      <OptimizeReferences>false</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClInclude Include="localcharset.h" />
+    <ClInclude Include="relocatable.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="iconv.c" />
+    <ClCompile Include="localcharset.c" />
+    <ClCompile Include="relocatable.c" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ResourceCompile Include="libiconv.rc" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+
+  <!--
+    ============================================================================
+    2019/03/05 - DAG - The TestSubjectDLL property is set in the last of two
+                       unlabeled ItemGroup nodes at the top of the project file.
+                       Since this task overrides the definition of an empty
+                       imported target, it must follow the import. To be on the
+                       safe side, it is defined dead last.
+
+    2019/03/14 - DAG - To find other empty targets such as these two that you
+                       can redefine (override) to do tuff, look for the
+                       following string at the beginning of an XML comment.
+
+                       Redefine this target in your project
+
+                       The BeforeBuildGenerateSources target is ideal for
+                       displaying MSBuild property values.
+    ============================================================================
+  -->
+
+  <Target Name="BeforeBuildGenerateSources">
+	<Message Text="SolutionDir = $(SolutionDir)" />
+	<Message Text="ProjectDir  = $(ProjectDir)"  />
+  </Target>
+
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="@(TestSubjectDLL)"
+    	  DestinationFolder="$(OutDir)"
+    	  OverwriteReadOnlyFiles="true"
+    	  SkipUnchangedFiles="true"
+    />
+  </Target>
+</Project>

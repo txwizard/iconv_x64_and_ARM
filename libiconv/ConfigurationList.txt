@@ -1,0 +1,44 @@
+# ==============================================================================
+#
+# File Name:			ConfigurationList.txt
+#
+# File Abstract:		List of configurations and platforms to build
+#
+# File Author:			David A. Gray
+#
+# ------------------------------------------------------------------------------
+# Revision History
+# ------------------------------------------------------------------------------
+#
+# Date       By  Synopsis
+# ---------- --- ---------------------------------------------------------------
+# 2019/03/13 DAG File created for LibIConv project
+# ==============================================================================
+
+ARM Debug
+ARM Release
+
+ARM DebugStatic
+ARM ReleaseStatic
+
+# ARM64 Debug
+# ARM64 Release
+
+# ARM64 DebugStatic
+# ARM64 ReleaseStatic
+
+Win32 Debug
+Win32 Release
+
+Win32 DebugStatic
+Win32 ReleaseStatic
+
+# x64 Debug
+# x64 Release
+
+# x64 DebugStatic
+# x64 ReleaseStatic
+
+# ==============================================================================
+#                            E n d   o f   L i s t
+# ==============================================================================
