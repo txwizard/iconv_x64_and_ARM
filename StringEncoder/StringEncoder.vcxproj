@@ -1,4 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+	============================================================================
+	Name:				libiconv/StringEncoder.vcxproj
+
+	Goal:				Define Microsoft MSBuild and Visual Studio configuration
+						to build libiconv for the Win32, x64, ARM, and ARM64
+						platforms.
+
+	Remarks:			Although this file has been extensively hand-edited, and
+	                    some elements, such as the AfterBuild target and the
+	                    TestSubjectDLL element on which it relies, are hidden
+	                    from the Microsoft Visual Studio editors, everything
+	                    works correctly when the project is built within Visual
+	                    Studio. Should the need arise to use the Visual Studio
+	                    property sheet forms to edit these settings, the hidden
+	                    bits are preserved, though redundant white space is
+	                    removed.
+
+	============================================================================
+	Revision History
+	============================================================================
+
+	Date       By Remark
+	========== == ==============================================================
+	2019/03/29 DG Add an AfterBuild step to copy the Visual C runtime library
+	              for the correct platform into the output directory, and extend
+	              to cover the x64, ARM, and ARM64 platforms.
+	============================================================================
+-->
+
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
@@ -38,23 +68,21 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>StringEncoder</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Debug'">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Release'">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
@@ -86,7 +114,7 @@
   -->
 
   <ItemGroup>
-    <TestSubjectDLL Include="$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.dll;$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.pdb;$(ProjectDir)..\vcruntime140\$(Platform)\vcruntime140.dll" />
+    <TestSubjectDLL Include="$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).dll;$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).pdb;$(ProjectDir)..\vcruntime140\$(Platform)\vcruntime140.dll" />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -128,12 +156,12 @@
     </ResourceCompile>
 
     <Link>
-      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
@@ -181,12 +209,12 @@
     </ResourceCompile>
 
     <Link>
-      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
@@ -234,12 +262,12 @@
     </ResourceCompile>
 
     <Link>
-      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
@@ -289,12 +317,12 @@
     </ResourceCompile>
 
     <Link>
-      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>true</OptimizeReferences>
@@ -342,12 +370,12 @@
     </ResourceCompile>
 
     <Link>
-      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>true</OptimizeReferences>
@@ -395,12 +423,12 @@
     </ResourceCompile>
 
     <Link>
-      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\$(Platform)\libiconv_$(Configuration)\libiconv$(PlatformArchitecture).lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>true</OptimizeReferences>
@@ -455,8 +483,18 @@
   -->
 
   <Target Name="BeforeBuildGenerateSources">
-    <Message Text="SolutionDir = $(SolutionDir)" />
-    <Message Text="ProjectDir  = $(ProjectDir)"  />
+    <Message Text="SolutionDir                  = $(SolutionDir)" />
+    <Message Text="ProjectDir                   = $(ProjectDir)" />
+    <Message Text="ProjectName                  = $(ProjectName)" />
+    <Message Text="TargetName                   = $(TargetName)" />
+    <Message Text="TargetExt                    = $(TargetExt)" />
+    <Message Text="ProjectExt                   = $(ProjectExt)" />
+    <Message Text="Platform                     = $(Platform)" />
+    <Message Text="PlatformArchitecture         = $(PlatformArchitecture)" />
+    <Message Text="Configuration                = $(Configuration)" />
+    <Message Text="OutDir                       = $(OutDir)" />
+    <Message Text="IntDir                       = $(IntDir)" />
+    <Message Text="WindowsTargetPlatformVersion = $(WindowsTargetPlatformVersion)" />
   </Target>
 
   <Target Name="AfterBuild">

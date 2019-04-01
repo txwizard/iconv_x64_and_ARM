@@ -1,0 +1,34 @@
+;   ============================================================================
+;
+;   Name:               iconv.def
+;
+;   Synopsis:           This is the module definition file for iconv.dll.
+;
+;   Remarks:            Ordinals are left unspecified.
+;
+;   Author:             David A. Gray
+;
+;   ----------------------------------------------------------------------------
+;   Revision History
+;   ----------------------------------------------------------------------------
+;
+;   Date       By  Synopsis
+;   ---------- --- -------------------------------------------------------------
+;   2019/03/28 DAG Add module definition file to Windows build.
+;   ============================================================================
+
+LIBRARY iconv
+DESCRIPTION 'Windows port of libiconv <http://www.gnu.org/software/libiconv/>'
+EXPORTS
+	iconv_open
+	iconv
+	iconv_close
+	iconv_open_into
+	iconvctl
+	iconvlist
+	iconv_canonicalize
+	libiconv_set_relocation_prefix
+
+;   ============================================================================
+;                         E n d   o f   i c o n v . d e f
+;   ============================================================================

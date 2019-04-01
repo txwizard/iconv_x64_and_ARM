@@ -1,4 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+	============================================================================
+	Name:				libiconv/libiconv.vcxproj
+
+	Goal:				Define Microsoft MSBuild and Visual Studio configuration
+						to build libiconv for the Win32, x64, ARM, and ARM64
+						platforms.
+
+	Remarks:			Although this file has been extensively hand-edited, and
+	                    some elements, such as the AfterBuild target and the
+	                    TestSubjectDLL element on which it relies, are hidden
+	                    from the Microsoft Visual Studio editors, everything
+	                    works correctly when the project is built within Visual
+	                    Studio. Should the need arise to use the Visual Studio
+	                    property sheet forms to edit these settings, the hidden
+	                    bits are preserved, though redundant white space is
+	                    removed.
+
+	============================================================================
+	Revision History
+	============================================================================
+
+	Date       By Remark
+	========== == ==============================================================
+	2019/03/29 DG Add AfterBuild steps to copy the Visual C runtime library for
+	              the correct platform into the output directory, then copy the
+	              finished library files into directories of reference libraries
+	              for libxml2 project and for general use, and extend to cover
+	              the x64, ARM, and ARM64 platforms.
+	============================================================================
+-->
+
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
@@ -93,16 +125,28 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
 
-  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Win32'">
-    <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-  </PropertyGroup>
+  <!--
+    ============================================================================
+    2019/03/11 - DAG - If my reading of "ARM Intrinsics" is correct, it may be
+                       that the Visual C++ cross compiler for ARM processors
+                       emits NEON instructions by default. That being the case,
+                       this project configuration file explicitly enables SSE2
+                       instructions when the platform is Win32 (x86) or Win64
+                       (x64), and is silent in that regard when the target is
+                       either ARM (ARM32) or ARM64.
 
-  <PropertyGroup Condition="'$(Platform)'=='ARM'" Label="UserMacros">
-    <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-  </PropertyGroup>
-  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='x64'">
-    <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-  </PropertyGroup>
+    Reference:	"ARM Intrinsics"
+			    https://docs.microsoft.com/en-us/cpp/intrinsics/arm-intrinsics?view=vs-2017
+
+	2019/03/22 - DAG - It appears that AdvancedVectorExtensions2 is equivalent
+	                   to StreamingSIMDExtensions2 for the x64 platform. For all
+	                   other platforms, both are disabled.
+
+	                   After further experimentation, I'm leaving the decision
+	                   to the compiler, since it appears that the default is to
+	                   use them if available.
+    ============================================================================
+  -->
 
   <!-- When MSBuild runs outside Visual Studio, SolutionDir is equal to ProjectDir. -->
 
@@ -110,6 +154,8 @@
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
     <OutDir>$(ProjectDir)..\$(Platform)\$(ProjectName)_$(Configuration)\</OutDir>
     <IntDir>$(OutDir)Intermediate\</IntDir>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)</TargetName>
+    <TargetExt>$(TargetExt)</TargetExt>
   </PropertyGroup>
 
   <!--
@@ -119,11 +165,28 @@
                        first be imported.
 
     2019/03/13 - DAG - $(SolutionDir) has a terminal backslash.
+
+    2019/03/14 - DAG - To find other empty targets such as these two that you
+                       can redefine (override) to do tuff, look for the
+                       following string at the beginning of an XML comment.
+
+                       Redefine this target in your project
+
+                       The BeforeBuildGenerateSources target is ideal for
+                       displaying MSBuild property values.
     ============================================================================
   -->
 
+  <!-- This is the file list that goes into the Copy task of target AfterBuild. -->
+
   <ItemGroup>
     <TestSubjectDLL Include="$(ProjectDir)..\vcruntime140\$(Platform)\vcruntime140.dll" />
+  </ItemGroup>
+
+  <!-- This is the file list that goes into the Copy task of targets AfterBuild2 and AfterBuild3. -->
+
+  <ItemGroup>
+    <LibsBuilt Include="$(OutDir)$(TargetName)$(TargetExt);$(OutDir)$(TargetName).lib;$(OutDir)$(TargetName).pdb" />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -153,6 +216,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -172,13 +236,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -208,6 +273,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -227,13 +293,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -261,6 +328,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -280,13 +348,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -316,6 +385,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -335,13 +405,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -369,6 +440,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -388,13 +460,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -422,6 +495,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -441,13 +515,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -475,6 +550,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -494,13 +570,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -530,6 +607,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -549,13 +627,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -583,6 +662,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -602,13 +682,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -636,6 +717,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -655,13 +737,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -691,6 +774,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -710,13 +794,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
@@ -744,6 +829,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDefinitionFile>.\$(ProjectName).def</ModuleDefinitionFile>
       <OmitFramePointers>false</OmitFramePointers>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -763,29 +849,34 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <GenerateManifest>true</GenerateManifest>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <LinkIncremental>false</LinkIncremental>
       <OptimizeReferences>false</OptimizeReferences>
-      <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
-      <SubSystem>Console</SubSystem>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ClInclude Include="localcharset.h" />
-    <ClInclude Include="relocatable.h" />
+    <ClInclude Include=".\localcharset.h" />
+    <ClInclude Include=".\relocatable.h" />
   </ItemGroup>
 
   <ItemGroup>
-    <ClCompile Include="iconv.c" />
-    <ClCompile Include="localcharset.c" />
-    <ClCompile Include="relocatable.c" />
+    <ClCompile Include=".\iconv.c" />
+    <ClCompile Include=".\localcharset.c" />
+    <ClCompile Include=".\relocatable.c" />
   </ItemGroup>
 
   <ItemGroup>
-    <ResourceCompile Include="libiconv.rc" />
+    <ResourceCompile Include=".\libiconv.rc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".\iconv.def" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -813,8 +904,17 @@
   -->
 
   <Target Name="BeforeBuildGenerateSources">
-	<Message Text="SolutionDir = $(SolutionDir)" />
-	<Message Text="ProjectDir  = $(ProjectDir)"  />
+    <Message Text="SolutionDir          = $(SolutionDir)" />
+    <Message Text="ProjectDir           = $(ProjectDir)" />
+    <Message Text="ProjectName          = $(ProjectName)" />
+    <Message Text="TargetName           = $(TargetName)" />
+    <Message Text="TargetExt            = $(TargetExt)" />
+    <Message Text="ProjectExt           = $(ProjectExt)" />
+    <Message Text="Platform             = $(Platform)" />
+    <Message Text="PlatformArchitecture = $(PlatformArchitecture)" />
+    <Message Text="Configuration        = $(Configuration)" />
+    <Message Text="OutDir               = $(OutDir)" />
+    <Message Text="IntDir               = $(IntDir)" />
   </Target>
 
   <Target Name="AfterBuild">
@@ -823,5 +923,42 @@
     	  OverwriteReadOnlyFiles="true"
     	  SkipUnchangedFiles="true"
     />
+  </Target>
+
+  <Target Name="AfterBuild2"
+  	      AfterTargets="AfterBuild"
+  	      Condition="exists('$(WWLinkLibPath)') AND ( '$(Configuration)'=='Release' ) AND ( ( '$(Platform)'=='Win32' ) OR ( '$(Platform)'=='x64' ) )">
+
+  	<!--
+  		This task puts copies of the library files into the common library
+  		directory to which environment string WWLinkLibPath points. Unless the
+  		specified directory exists, this target is skipped.
+
+  		Since the predominant work in my shop targets Win32 and x64, only those
+  		two platforms go into the common library repository.
+  	-->
+
+    <Copy SourceFiles="@(LibsBuilt)"
+    	  DestinationFolder="$(WWLinkLibPath)"
+    	  OverwriteReadOnlyFiles="true"
+    	  SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="AfterBuild3"
+  	      AfterTargets="AfterBuild"
+  	      Condition="exists('C:\Users\DAG\Documents\_Clients\CodeProject Authors Group\Windows on ARM\libxml2\libxml2-2.9.9\win32\VC10\LIB') AND '$(Configuration)'=='Release'">
+
+  	<!--
+  		This task puts copies of the library files into the dedicated library
+  		directory of the libxml2 repository. Unless the specified directory
+  		exists, this target is skipped.
+
+  		Only release builds go into the libxml2 library repository.
+  	-->
+
+    <Copy SourceFiles="@(LibsBuilt)"
+    	  DestinationFolder="C:\Users\DAG\Documents\_Clients\CodeProject Authors Group\Windows on ARM\libxml2\libxml2-2.9.9\win32\VC10\LIB"
+    	  OverwriteReadOnlyFiles="true"
+    	  SkipUnchangedFiles="true" />
   </Target>
 </Project>

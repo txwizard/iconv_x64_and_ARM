@@ -18,7 +18,7 @@ int main ( int argc , char * argv [ ] )
 
 	if ( ( rintRC = ShowProgramInfo ( argv [ 0 ] ) ) )
 	{
-		printf ( "TestZlib aborted" );
+		printf ( "StringEncoder aborted" );
 		return rintRC;
 	}	// if ( ( rc = ShowProgramInfo ( argv [ 0 ] ) ) )
 
