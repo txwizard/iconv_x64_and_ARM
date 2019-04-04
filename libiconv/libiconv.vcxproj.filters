@@ -15,27 +15,32 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="localcharset.h">
+    <ClInclude Include=".\localcharset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="relocatable.h">
+    <ClInclude Include=".\relocatable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="relocatable.c">
+    <ClCompile Include=".\iconv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="localcharset.c">
+    <ClCompile Include=".\localcharset.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="iconv.c">
+    <ClCompile Include=".\relocatable.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="libiconv.rc">
+    <ResourceCompile Include=".\libiconv.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".\iconv.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

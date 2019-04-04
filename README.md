@@ -1,17 +1,44 @@
 # IConv for Windows for Intel and ARM Processors ReadMe
 
-The purpose of this repository is to publish a port of the famous ZLib (zlib,
-for purists - you know who you are) library for creating Zip archives and
-extracting files from them to Windows 10 running on ARM processors such as the
-Qualcomm Snapdragon series, such as the one inside the Asus ASUS NovaGo TP370QL,
+The purpose of this repository is to publish a port of the famous IConv (iconv,
+for purists - you know who you are) library for transforming the encoding of
+strings of text to Windows 10 running on ARM processors such as the Qualcomm
+Snapdragon series, such as the one inside the Asus ASUS NovaGo TP370QL,
 about which you can learn more at
 <https://www.asus.com/us/2-in-1-PCs/ASUS-NovaGo-TP370QL/>.
 
-This code builds on the latest version of iconv published on the official site,
-at <https://www.gnu.org/software/libiconv/>, adding a configuration for ARM.
+This code builds on version 1.15, the latest version of iconv published on the
+official site, at <https://www.gnu.org/software/libiconv/>, to which a
+configuration for ARM has been added.
 
-For completeness, this repository includes the __Win32__ (32 bit Windows on
-Intel/AMD) binaries.
+For completeness, this repository includes Intel/AMD binaries and builds for
+the __Win32__ and __x64__, for 32 and 64 bits, respectively.
+
+## Notes for Builders
+
+All builds of this library generate over a hundred warnings, all of which appear
+to be benign. The 64 bit builds for both platforms generate nearly six times as
+many warnings, which are equally benign.
+
+Since fixing them would break the API and its ABI, we'll just have to live with
+them, unless someone comes forward with a workable solution. Nevertheless, tests
+conducted on both 64 bit platforms yielded results comparable to those produced
+by the 32 bit binaries.
+
+The repostitory contains a LIB directory that serves as a repository for all
+output files, in addition to housing two helper libraries used by the included
+unit test programs.
+
+1. `CRTTime` wraps the CRT machine time retrieval and formatting routines in
+   `__stdcall` wrappers that make them accessible to any programming platform
+   that can call into the Windows API.
+
+2. `NativeConssoleAppAids32` exists primarily to provide the helper routines
+   that display a message on the test programs' output streams that indicates
+   the platform for which it was built. Preprocessor symbols derived from the
+   project configuration file are passed into the compiler on its command line;
+   depending on which of four mutually exclusive symbol names is present, the
+   compiler emits code that causes the appropriate message to appear.
 
 ## Using These Libraries
 
